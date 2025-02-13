@@ -31,7 +31,7 @@ const students = [
     // Add more dummy students as needed
   ];
 
-function StudentTable({ }) {
+function StudentTable() {
     return (
         <div className="table-container">
             <table>
