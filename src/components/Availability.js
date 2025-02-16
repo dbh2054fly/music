@@ -7,12 +7,44 @@ import {
   Box
 } from '@mui/material';
 
+//generates a list of objects that contain the display hour and respective minute slots
+export const generateTimeSlots = () => {
+  const timeSlots = []
+  for(let hour = 0; hour < 24; hour++){
+    //get the display hour for each hour of the day
+    let displayHour;
+    if (hour === 0) {
+      displayHour = "12:00 am";
+    } else if (hour === 12) {
+      displayHour = "12:00 pm";
+    } else if (hour < 12) {
+      displayHour = `${hour}:00 am`;
+    } else {
+      displayHour = `${hour-12}:00 pm`;
+    }
+
+    //get the time slots for each hour
+    const minutes = [0, 15, 30, 45]
+    const slots = minutes.map(m =>({
+      display: displayHour,
+      minutes: m,
+      value: `${hour}:${m.toString().padStart(2, '0')}`
+    }));
+
+    timeSlots.push({
+      hour: displayHour,
+      ampm: displayHour.slice(-2),
+      slots: slots
+    });
+  }
+  return timeSlots;
+}
+
 const AvailabilityGrid = () => {
+  // Inside your component, temporarily
+  console.log(JSON.stringify(generateTimeSlots(), null, 2));
   const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-  const times = Array.from({ length: 11 }, (_, i) => {
-    const hour = i + 10;
-    return hour <= 12 ? `${hour}:00 am` : `${hour-12}:00 pm`;
-  });
+  const timeSlots = generateTimeSlots();
 
   const [selectedSlots, setSelectedSlots] = useState(new Set());
   const [isMouseDown, setIsMouseDown] = useState(false);
@@ -66,75 +98,94 @@ const AvailabilityGrid = () => {
       />
       <CardContent>
         <Box sx={{ overflowX: 'auto' }}>
-          <Box 
-            sx={{ 
-              display: 'grid',
-              gridTemplateColumns: 'auto repeat(7, 1fr)',
-              minWidth: '600px',
-              gap: 0
-            }}
-          >
-            {/* Time labels column */}
-            <Box sx={{ gridColumn: '1' }}>
-              {times.map((time) => (
-                <Box 
-                  key={time} 
-                  sx={{ 
-                    height: '32px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'flex-end',
-                    pr: 1
-                  }}
-                >
-                  <Typography variant="body2">{time}</Typography>
-                </Box>
-              ))}
-            </Box>
+        <Box 
+          sx={{ 
+            display: 'grid',
+            gridTemplateColumns: 'auto repeat(7, 1fr)',
+            minWidth: '600px',
+            gap: 0
+          }}
+        >
+          {/* Time labels column */}
+          <Box sx={{ gridColumn: '1', display: 'grid', gridTemplateRows: '32px 13px repeat(auto-fill, 12px)' }}> {/* Reduced height for 15-min intervals */}
+            {/* Header spacer */}
+            <Box sx={{ 
+            height: '32px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: 1,
+            borderBottom: 1,
+            borderColor: 'divider'
+          }}  />
+            
+            {timeSlots.map((timeBlock) => (
+              // Each hour block gets 4 rows (15 min each)
+              <Box 
+                key={timeBlock.hour}
+                sx={{ 
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  justifyContent: 'flex-end',
+                  pr: 1,
+                  gridRow: 'span 4',
+                  border: 1,
+                  borderColor: 'divider'
+                }}
+              >
+                {(
+                  <Typography variant="body2">{timeBlock.hour}</Typography>
+                )}
+              </Box>
+            ))}
+          </Box>
 
-            {/* Day columns */}
-            {days.map((day) => (
-              <Box key={day} sx={{ gridColumn: 'auto' }}>
-                <Box 
-                  sx={{ 
-                    height: '32px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderBottom: 1,
-                    borderColor: 'divider',
-                    fontWeight: 'bold'
-                  }}
-                >
-                  <Typography variant="body2">{day}</Typography>
-                </Box>
-                {times.map((time) => {
-                  const slot = `${day}-${time}`;
+          {/* Day columns */}
+          {days.map((day) => (
+            <Box key={day} sx={{ gridColumn: 'auto', display: 'grid', gridTemplateRows: '32px repeat(auto-fill, 12px)' }}>
+              <Box 
+                sx={{ 
+                  height: '32px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: 1,
+                  borderBottom: 1,
+                  borderColor: 'divider',
+                  fontWeight: 'bold'
+                }}
+              >
+                <Typography variant="body2">{day}</Typography>
+              </Box>
+              {timeSlots.flatMap((timeBlock) => 
+                timeBlock.slots.map((slot) => {
+                  const slotId = `${day}-${timeBlock.hour}-${slot.minutes}`;
                   return (
                     <Box
-                      key={slot}
+                      key={slotId}
                       sx={{
-                        height: '32px',
+                        height: '12px', // 15-minute slot height
                         border: 1,
                         borderColor: 'divider',
                         cursor: 'pointer',
                         transition: 'background-color 0.2s',
-                        backgroundColor: selectedSlots.has(slot) ? 'primary.main' : 'transparent',
+                        backgroundColor: selectedSlots.has(slotId) ? 'primary.main' : 'transparent',
                         '&:hover': {
-                          backgroundColor: selectedSlots.has(slot) 
+                          backgroundColor: selectedSlots.has(slotId) 
                             ? 'primary.main' 
                             : 'action.hover'
                         }
                       }}
-                      onMouseDown={() => handleMouseDown(slot)}
-                      onMouseEnter={() => handleMouseEnter(slot)}
+                      onMouseDown={() => handleMouseDown(slotId)}
+                      onMouseEnter={() => handleMouseEnter(slotId)}
                       onMouseUp={handleMouseUp}
                     />
                   );
-                })}
-              </Box>
-            ))}
-          </Box>
+                })
+              )}
+            </Box>
+          ))}
+        </Box>
         </Box>
       </CardContent>
     </Card>
