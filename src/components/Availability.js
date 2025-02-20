@@ -79,9 +79,14 @@ const AvailabilityGrid = () => {
   return (
     <Card 
       sx={{ 
+        height: 'fit-content',
+        display: 'flex',
+        flexDirection: 'column',
+        alignSelf: 'flex-start',
         maxWidth: '1000px', 
-        margin: '0 auto',
-        boxShadow: 2 
+        margin: '0px auto',
+        boxShadow: 2,
+        maxHeight: '600px'
       }}
       onMouseLeave={handleMouseUp}
     >
@@ -93,21 +98,31 @@ const AvailabilityGrid = () => {
           '& .MuiCardHeader-title': {
             fontSize: '1.5rem',
             fontWeight: 'bold'
-          }
+          },
+          padding: '16px'
         }}
       />
-      <CardContent>
+      <CardContent
+      sx={{ 
+          padding: '16px !important', 
+          '&:last-child': {
+          paddingBottom: '16px !important', 
+        },
+        height: '100%', 
+        overflow: 'auto'
+      }}>
         <Box sx={{ overflowX: 'auto' }}>
         <Box 
           sx={{ 
             display: 'grid',
             gridTemplateColumns: 'auto repeat(7, 1fr)',
             minWidth: '600px',
+            height: 'fit-content',
             gap: 0
           }}
         >
           {/* Time labels column */}
-          <Box sx={{ gridColumn: '1', display: 'grid', gridTemplateRows: '32px 13px repeat(auto-fill, 12px)' }}> {/* Reduced height for 15-min intervals */}
+          <Box sx={{ gridColumn: '1', display: 'grid', gridTemplateRows: '32px repeat(96, 12px)',height: 'fit-content' }}> {/* Reduced height for 15-min intervals */}
             {/* Header spacer */}
             <Box sx={{ 
             height: '32px',
@@ -130,7 +145,8 @@ const AvailabilityGrid = () => {
                   pr: 1,
                   gridRow: 'span 4',
                   border: 1,
-                  borderColor: 'divider'
+                  borderColor: 'divider',
+                  boxSizing: 'border-box',
                 }}
               >
                 {(
