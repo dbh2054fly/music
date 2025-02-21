@@ -10,7 +10,7 @@ import {
 //generates a list of objects that contain the display hour and respective minute slots
 export const generateTimeSlots = () => {
   const timeSlots = []
-  for(let hour = 0; hour < 24; hour++){
+  for(let hour = 6; hour < 22; hour++){
     //get the display hour for each hour of the day
     let displayHour;
     if (hour === 0) {
